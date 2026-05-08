@@ -82,10 +82,12 @@
     <!-- API Key Input -->
     <div class="apikey-bar">
       <label for="apikey">🔑 Gemini API Key</label>
-      <input type="password" id="apikey" placeholder="AIzaSy..." autocomplete="off" />
+      <input type="password" id="apikey" placeholder="AIzaSy..." autocomplete="off" oninput="saveKey()" />
+      <span id="key-status" style="font-size:12px;white-space:nowrap;"></span>
     </div>
     <p class="apikey-note" style="margin-bottom:14px;">
       Belum punya API key? Dapatkan gratis di <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a> → Get API Key.
+      API key disimpan otomatis di browser ini.
     </p>
 
     <!-- Meeting Info -->
@@ -161,6 +163,23 @@
 var lang = "id";
 var agendaCount = 0;
 var agendas = [];
+
+function saveKey() {
+  var k = document.getElementById("apikey").value.trim();
+  if (k) { localStorage.setItem("gemini_api_key", k); showKeyStatus("✅ Tersimpan"); }
+  else { localStorage.removeItem("gemini_api_key"); showKeyStatus(""); }
+}
+
+function showKeyStatus(msg) {
+  var el = document.getElementById("key-status");
+  el.textContent = msg;
+  el.style.color = "#0f6e56";
+}
+
+function loadKey() {
+  var k = localStorage.getItem("gemini_api_key");
+  if (k) { document.getElementById("apikey").value = k; showKeyStatus("✅ Tersimpan"); }
+}
 
 var i18n = {
   id: {
@@ -371,6 +390,7 @@ function goBack() {
   document.getElementById("input-section").style.display = "block";
 }
 
+loadKey();
 addAgenda();
 </script>
 </body>
