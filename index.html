@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Template Notulen Rapat</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #f5f5f3; color: #1a1a18; min-height: 100vh; padding: 2rem 1rem; }
+  .container { max-width: 720px; margin: 0 auto; }
+  h1 { font-size: 20px; font-weight: 500; margin-bottom: 1.5rem; }
+  .card { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 12px; }
+  label { font-size: 13px; color: #5f5e5a; display: block; margin-bottom: 4px; }
+  input, textarea {
+    width: 100%; padding: 8px 10px; font-size: 14px; font-family: inherit;
+    border: 0.5px solid #b4b2a9; border-radius: 8px;
+    background: #fff; color: #1a1a18; outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus, textarea:focus { border-color: #1d9e75; }
+  textarea { resize: vertical; min-height: 80px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+  .span2 { grid-column: 1 / -1; }
+  .field { margin-bottom: 8px; }
+  .section-title { font-size: 13px; font-weight: 500; color: #1a1a18; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  button {
+    padding: 8px 16px; font-size: 13px; font-family: inherit; cursor: pointer;
+    border: 0.5px solid #b4b2a9; border-radius: 8px;
+    background: transparent; color: #1a1a18;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: background 0.15s;
+  }
+  button:hover { background: #f1efe8; }
+  button:active { transform: scale(0.98); }
+  .btn-primary {
+    background: #1d9e75; color: #fff; border-color: #1d9e75;
+    padding: 10px 20px; font-size: 14px;
+  }
+  .btn-primary:hover { background: #0f6e56; border-color: #0f6e56; }
+  .btn-danger { color: #a32d2d; border-color: #f09595; background: transparent; padding: 4px 8px; }
+  .btn-danger:hover { background: #fcebeb; }
+  .lang-toggle { display: flex; gap: 6px; }
+  .lang-btn {
+    padding: 4px 12px; font-size: 13px; border-radius: 8px;
+    border: 0.5px solid #b4b2a9; background: transparent; color: #5f5e5a; cursor: pointer;
+  }
+  .lang-btn.active { background: #e1f5ee; color: #0f6e56; border-color: #5dcaa5; }
+  .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 10px; }
+  #output-section { display: none; }
+  #output-text { white-space: pre-wrap; font-size: 14px; line-height: 1.8; color: #1a1a18; min-height: 200px; }
+  .loading { color: #888780; font-style: italic; }
+  .back-bar { display: flex; gap: 8px; margin-top: 12px; }
+  .agenda-item { border: 0.5px solid #d3d1c7; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 10px; background: #fff; }
+  .agenda-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .agenda-label { font-size: 13px; font-weight: 500; color: #5f5e5a; }
+  #add-agenda-btn { margin-bottom: 1rem; }
+  .apikey-bar {
+    background: #e1f5ee; border: 0.5px solid #5dcaa5; border-radius: 10px;
+    padding: 10px 14px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .apikey-bar label { font-size: 13px; color: #0f6e56; margin: 0; white-space: nowrap; }
+  .apikey-bar input { flex: 1; min-width: 180px; border-color: #5dcaa5; font-size: 13px; padding: 6px 10px; }
+  .apikey-bar input:focus { border-color: #1d9e75; }
+  .apikey-note { font-size: 12px; color: #5f5e5a; margin-top: 6px; }
+  a { color: #1d9e75; }
+  @media (max-width: 500px) { .grid2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- INPUT SECTION -->
+  <div id="input-section">
+    <div class="top-bar">
+      <h1 id="main-title">Template Notulen Rapat</h1>
+      <div class="lang-toggle">
+        <button class="lang-btn active" onclick="setLang('id', this)">Bahasa Indonesia</button>
+        <button class="lang-btn" onclick="setLang('en', this)">English</button>
+      </div>
+    </div>
+
+    <!-- API Key Input -->
+    <div class="apikey-bar">
+      <label for="apikey">🔑 Gemini API Key</label>
+      <input type="password" id="apikey" placeholder="AIzaSy..." autocomplete="off" />
+    </div>
+    <p class="apikey-note" style="margin-bottom:14px;">
+      Belum punya API key? Dapatkan gratis di <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a> → Get API Key.
+    </p>
+
+    <!-- Meeting Info -->
+    <div class="card">
+      <p class="section-title" id="lbl-info">📄 Informasi Rapat</p>
+      <div class="grid2">
+        <div class="field">
+          <label id="lbl-title">Judul Rapat</label>
+          <input type="text" id="f-title" />
+        </div>
+        <div class="field">
+          <label id="lbl-date">Tanggal</label>
+          <input type="date" id="f-date" />
+        </div>
+        <div class="field">
+          <label id="lbl-time">Waktu</label>
+          <input type="time" id="f-time" />
+        </div>
+        <div class="field">
+          <label id="lbl-location">Lokasi</label>
+          <input type="text" id="f-location" />
+        </div>
+        <div class="field">
+          <label id="lbl-facilitator">Pemimpin Rapat</label>
+          <input type="text" id="f-facilitator" />
+        </div>
+        <div class="field span2">
+          <label id="lbl-attendees">Peserta (pisahkan dengan koma)</label>
+          <input type="text" id="f-attendees" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Agenda Items -->
+    <p class="section-title" id="lbl-agenda-section">📋 Agenda &amp; Catatan Diskusi</p>
+    <div id="agenda-list"></div>
+    <button id="add-agenda-btn" onclick="addAgenda()">+ <span id="lbl-add-agenda">Tambah Agenda</span></button>
+
+    <!-- Closing -->
+    <div class="card">
+      <p class="section-title" id="lbl-closing-section">✅ Tindak Lanjut &amp; Penutup</p>
+      <div class="field">
+        <label id="lbl-actions">Tindak Lanjut / Action Items</label>
+        <textarea id="f-actions"></textarea>
+      </div>
+      <div class="field">
+        <label id="lbl-next">Jadwal Rapat Berikutnya</label>
+        <input type="text" id="f-next" />
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="generate()">📝 <span id="lbl-generate">Buat Notulen Formal</span></button>
+  </div>
+
+  <!-- OUTPUT SECTION -->
+  <div id="output-section">
+    <div class="top-bar">
+      <h1 id="output-title">Hasil Notulen Rapat</h1>
+    </div>
+    <div class="card">
+      <div id="output-text"></div>
+    </div>
+    <div class="back-bar">
+      <button onclick="copyOutput()">📋 <span id="lbl-copy">Salin</span></button>
+      <button onclick="printOutput()">🖨️ <span id="lbl-print">Cetak / Save PDF</span></button>
+      <button onclick="goBack()">← <span id="lbl-back">Kembali</span></button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+var lang = "id";
+var agendaCount = 0;
+var agendas = [];
+
+var i18n = {
+  id: {
+    mainTitle: "Template Notulen Rapat",
+    outputTitle: "Hasil Notulen Rapat",
+    info: "📄 Informasi Rapat",
+    title: "Judul Rapat", date: "Tanggal", time: "Waktu",
+    location: "Lokasi", facilitator: "Pemimpin Rapat",
+    attendees: "Peserta (pisahkan dengan koma)",
+    agendaSection: "📋 Agenda & Catatan Diskusi",
+    agendaLabel: "Agenda", agendaTitle: "Judul Agenda",
+    agendaPoints: "Poin-poin Diskusi",
+    agendaPointsPlaceholder: "Masukkan poin-poin diskusi, satu per baris...",
+    agendaTitlePlaceholder: "Topik agenda...",
+    addAgenda: "Tambah Agenda",
+    closingSection: "✅ Tindak Lanjut & Penutup",
+    actions: "Tindak Lanjut / Action Items",
+    next: "Jadwal Rapat Berikutnya",
+    generate: "Buat Notulen Formal",
+    copy: "Salin", back: "Kembali", print: "Cetak / Save PDF",
+    loading: "Sedang menghasilkan notulen formal...",
+    errKey: "Masukkan Gemini API Key terlebih dahulu.",
+    errFail: "Gagal menghubungi API. Periksa API key Anda dan coba lagi."
+  },
+  en: {
+    mainTitle: "Meeting Minutes Template",
+    outputTitle: "Meeting Minutes Output",
+    info: "📄 Meeting Information",
+    title: "Meeting Title", date: "Date", time: "Time",
+    location: "Location", facilitator: "Facilitator",
+    attendees: "Attendees (comma-separated)",
+    agendaSection: "📋 Agenda Items & Discussion Notes",
+    agendaLabel: "Item", agendaTitle: "Agenda Title",
+    agendaPoints: "Discussion Points",
+    agendaPointsPlaceholder: "Enter discussion points, one per line...",
+    agendaTitlePlaceholder: "Agenda topic...",
+    addAgenda: "Add Agenda Item",
+    closingSection: "✅ Action Items & Closing",
+    actions: "Action Items / Next Steps",
+    next: "Next Meeting Date",
+    generate: "Generate Formal Minutes",
+    copy: "Copy", back: "Back", print: "Print / Save PDF",
+    loading: "Generating formal minutes...",
+    errKey: "Please enter your Gemini API Key first.",
+    errFail: "Failed to reach API. Check your API key and try again."
+  }
+};
+
+function setLang(l, btn) {
+  lang = l;
+  var t = i18n[l];
+  document.getElementById("main-title").textContent = t.mainTitle;
+  document.getElementById("output-title").textContent = t.outputTitle;
+  document.getElementById("lbl-info").textContent = t.info;
+  document.getElementById("lbl-title").textContent = t.title;
+  document.getElementById("lbl-date").textContent = t.date;
+  document.getElementById("lbl-time").textContent = t.time;
+  document.getElementById("lbl-location").textContent = t.location;
+  document.getElementById("lbl-facilitator").textContent = t.facilitator;
+  document.getElementById("lbl-attendees").textContent = t.attendees;
+  document.getElementById("lbl-agenda-section").textContent = t.agendaSection;
+  document.getElementById("lbl-add-agenda").textContent = t.addAgenda;
+  document.getElementById("lbl-closing-section").textContent = t.closingSection;
+  document.getElementById("lbl-actions").textContent = t.actions;
+  document.getElementById("lbl-next").textContent = t.next;
+  document.getElementById("lbl-generate").textContent = t.generate;
+  document.getElementById("lbl-copy").textContent = t.copy;
+  document.getElementById("lbl-back").textContent = t.back;
+  document.getElementById("lbl-print").textContent = t.print;
+  document.querySelectorAll(".lang-btn").forEach(function(b) { b.classList.remove("active"); });
+  btn.classList.add("active");
+  agendas.forEach(function(a, i) {
+    var el = document.getElementById("agenda-" + a.id);
+    if (!el) return;
+    el.querySelector(".agenda-label").textContent = t.agendaLabel + " " + (i + 1);
+    el.querySelector(".agenda-title-label").textContent = t.agendaTitle;
+    el.querySelector(".agenda-title-input").placeholder = t.agendaTitlePlaceholder;
+    el.querySelector(".agenda-points-label").textContent = t.agendaPoints;
+    el.querySelector(".agenda-points-input").placeholder = t.agendaPointsPlaceholder;
+  });
+}
+
+function addAgenda() {
+  agendaCount++;
+  var id = agendaCount;
+  agendas.push({ id: id, num: agendas.length + 1 });
+  var t = i18n[lang];
+  var div = document.createElement("div");
+  div.className = "agenda-item";
+  div.id = "agenda-" + id;
+  div.innerHTML =
+    '<div class="agenda-header">' +
+      '<span class="agenda-label">' + t.agendaLabel + " " + agendas.length + '</span>' +
+      '<button class="btn-danger" onclick="removeAgenda(' + id + ')">🗑</button>' +
+    '</div>' +
+    '<div class="field">' +
+      '<label class="agenda-title-label">' + t.agendaTitle + '</label>' +
+      '<input type="text" class="agenda-title-input" placeholder="' + t.agendaTitlePlaceholder + '" />' +
+    '</div>' +
+    '<div class="field">' +
+      '<label class="agenda-points-label">' + t.agendaPoints + '</label>' +
+      '<textarea class="agenda-points-input" placeholder="' + t.agendaPointsPlaceholder + '"></textarea>' +
+    '</div>';
+  document.getElementById("agenda-list").appendChild(div);
+}
+
+function removeAgenda(id) {
+  agendas = agendas.filter(function(a) { return a.id !== id; });
+  var el = document.getElementById("agenda-" + id);
+  if (el) el.remove();
+  var t = i18n[lang];
+  agendas.forEach(function(a, i) {
+    a.num = i + 1;
+    var el2 = document.getElementById("agenda-" + a.id);
+    if (el2) el2.querySelector(".agenda-label").textContent = t.agendaLabel + " " + (i + 1);
+  });
+}
+
+function getAgendaData() {
+  return agendas.map(function(a, i) {
+    var el = document.getElementById("agenda-" + a.id);
+    if (!el) return null;
+    return {
+      num: i + 1,
+      title: el.querySelector(".agenda-title-input").value || ("Agenda " + (i + 1)),
+      points: el.querySelector(".agenda-points-input").value || "(no notes)"
+    };
+  }).filter(Boolean);
+}
+
+async function generate() {
+  var t = i18n[lang];
+  var apiKey = document.getElementById("apikey").value.trim();
+  if (!apiKey) { alert(t.errKey); return; }
+
+  document.getElementById("input-section").style.display = "none";
+  document.getElementById("output-section").style.display = "block";
+  var outEl = document.getElementById("output-text");
+  outEl.textContent = t.loading;
+  outEl.className = "loading";
+
+  var title = document.getElementById("f-title").value || "(not specified)";
+  var date = document.getElementById("f-date").value || "(not specified)";
+  var time = document.getElementById("f-time").value || "(not specified)";
+  var location = document.getElementById("f-location").value || "(not specified)";
+  var facilitator = document.getElementById("f-facilitator").value || "(not specified)";
+  var attendees = document.getElementById("f-attendees").value || "(not specified)";
+  var actions = document.getElementById("f-actions").value || "(none)";
+  var next = document.getElementById("f-next").value || "(not specified)";
+  var agendaData = getAgendaData();
+  var langLabel = lang === "id" ? "Bahasa Indonesia" : "English";
+
+  var agendaText = agendaData.map(function(a) {
+    return a.num + ". " + a.title + "\n   Notes: " + a.points;
+  }).join("\n\n");
+
+  var prompt = "You are a professional meeting secretary. Convert the following meeting notes into formal, well-structured meeting minutes in " + langLabel + ". Write in complete, formal paragraphs. Do not use bullet points in the output — convert all points into flowing prose.\n\nMeeting Details:\n- Title: " + title + "\n- Date: " + date + "\n- Time: " + time + "\n- Location: " + location + "\n- Facilitator: " + facilitator + "\n- Attendees: " + attendees + "\n\nAgenda Items and Discussion Points:\n" + agendaText + "\n\nAction Items / Next Steps:\n" + actions + "\n\nNext Meeting Date:\n" + next + "\n\nFormat the output as a complete, formal meeting minutes document with proper sections: header, pembukaan/opening, discussion for each agenda item, action items, and closing. Use formal register throughout.";
+
+  try {
+    var res = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + apiKey,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { maxOutputTokens: 1500, temperature: 0.4 }
+        })
+      }
+    );
+    var data = await res.json();
+    if (data.error) { outEl.textContent = "Error: " + data.error.message; outEl.className = ""; return; }
+    var text = data.candidates[0].content.parts[0].text || "";
+    outEl.textContent = text;
+    outEl.className = "";
+  } catch(e) {
+    outEl.textContent = t.errFail;
+    outEl.className = "";
+  }
+}
+
+function copyOutput() {
+  var text = document.getElementById("output-text").textContent;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text);
+  } else {
+    var ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta);
+    ta.select(); document.execCommand("copy");
+    document.body.removeChild(ta);
+  }
+  var btn = event.target.closest("button");
+  var orig = btn.innerHTML;
+  btn.innerHTML = "✅ Tersalin!";
+  setTimeout(function() { btn.innerHTML = orig; }, 1500);
+}
+
+function printOutput() {
+  var text = document.getElementById("output-text").textContent;
+  var w = window.open("", "_blank");
+  w.document.write("<html><head><title>Notulen Rapat</title><style>body{font-family:system-ui,sans-serif;padding:2rem;font-size:14px;line-height:1.8;white-space:pre-wrap;}</style></head><body>" + text.replace(/</g,"&lt;") + "</body></html>");
+  w.document.close();
+  w.print();
+}
+
+function goBack() {
+  document.getElementById("output-section").style.display = "none";
+  document.getElementById("input-section").style.display = "block";
+}
+
+addAgenda();
+</script>
+</body>
+</html>
